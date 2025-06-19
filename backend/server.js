@@ -2,11 +2,20 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const multer = require("multer");
 
 dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Multer configuration for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+});
 
 //DB connect
 
@@ -26,4 +35,9 @@ const shiftRoutes = require("./routes/shift_route");
 app.use("/api/shifts", shiftRoutes);
 const roleRoutes = require("./routes/role");
 app.use("/api/roles", roleRoutes);
+
+// Reclam routes with multer middleware for POST only
+const reclamRoutes = require("./routes/reclam_route");
+app.use("/api/reclams", reclamRoutes);
+
 app.listen(5000, () => console.log("Server started on port 5000"));

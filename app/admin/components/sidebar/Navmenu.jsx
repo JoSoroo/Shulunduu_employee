@@ -1,15 +1,15 @@
 "use client";
 import { uniqueId } from "lodash";
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import VaccinesIcon from "@mui/icons-material/Vaccines";
 import React from "react";
 import Link from "next/link";
-import LogoutIcon from '@mui/icons-material/Logout';
+import LogoutIcon from "@mui/icons-material/Logout";
 import { useAuth } from "../../context/authContext";
-import RoofingIcon from '@mui/icons-material/Roofing';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import BadgeIcon from '@mui/icons-material/Badge';
+import RoofingIcon from "@mui/icons-material/Roofing";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import BadgeIcon from "@mui/icons-material/Badge";
 import {
   Sidebar,
   SidebarContent,
@@ -19,7 +19,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 const NavMenu = () => {
   const { user } = useAuth();
 
@@ -43,7 +43,7 @@ const NavMenu = () => {
       roles: ["admin"],
     },
     {
-      id:uniqueId(),
+      id: uniqueId(),
       title: "Албан тушаал",
       icon: Settings,
       href: "/admin/dashboard/role",
@@ -58,7 +58,7 @@ const NavMenu = () => {
     },
     {
       id: uniqueId(),
-      title: "Ажилчин", 
+      title: "Ажилчин",
       icon: BadgeIcon,
       href: "/admin/dashboard/employees",
       roles: ["admin", "manager"],
@@ -70,9 +70,18 @@ const NavMenu = () => {
       href: "/admin/dashboard/shift",
       roles: ["manager"],
     },
+    {
+      id: uniqueId(),
+      title: "Реклам",
+      icon: BadgeIcon,
+      href: "/admin/dashboard/reclam",
+      roles: ["admin"],
+    },
   ];
 
-  const filteredItems = allMenuItems.filter((item) => item.roles.includes(userRole));
+  const filteredItems = allMenuItems.filter((item) =>
+    item.roles.includes(userRole)
+  );
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -80,12 +89,13 @@ const NavMenu = () => {
   };
 
   return (
-     <Sidebar>
+    <Sidebar>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Үндсэн цэс</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              {/* <Image /> */}
               {filteredItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>

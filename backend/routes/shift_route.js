@@ -11,9 +11,21 @@ console.log("JWT_SECRET in shift_route:", jwtSecret);
 //post хүсэлт илгээх
 router.post("/", async (req, res) => {
   try {
+    console.log("Received shift data:", req.body);
+    console.log("Roles in request:", req.body.roles);
+    console.log("Employees in request:", req.body.employees);
+
     const shift = new Shift(req.body);
+    console.log("Shift model before save:", shift);
+    console.log("Shift roles before save:", shift.roles);
+    console.log("Shift employees before save:", shift.employees);
+
     await shift.save();
-   res.status(201).json(shift);
+    console.log("Shift saved successfully:", shift);
+    console.log("Shift roles after save:", shift.roles);
+    console.log("Shift employees after save:", shift.employees);
+
+    res.status(201).json(shift);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Хадгалах үед алдаа гарлаа" });
@@ -40,7 +52,7 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-//Ажилтан мэдээлэл авах
+//Ээлжийн мэдээлэл авах
 router.get("/", verifyToken, async (req, res) => {
   try {
     const { role, branchId } = req.user;
@@ -50,13 +62,13 @@ router.get("/", verifyToken, async (req, res) => {
       filter = { branchId };
     }
     console.log("Shift filter:", filter);
-    
+
     const shift = await Shift.find(filter)
       .populate("branchId")
       .populate("roles")
       .populate({
         path: "employees.$*",
-        model: "Employee"
+        model: "Employee",
       });
 
     console.log("Found shifts:", shift);
@@ -69,28 +81,50 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-// ... бусад импорт, код ...
-
-// Зөвхөн тухайн салбарын ээлжүүдийг авах
-router.get("/branch/:branchId", async (req, res) => {
+// Өнөөдрийн ээлжийн мэдээлэл салбарын id гаар авах
+router.get("/today/:branchId", async (req, res) => {
   try {
     const { branchId } = req.params;
-    if (!branchId) {
-      return res.status(400).json({ message: "Салбарын ID шаардлагатай" });
-    }
+    // Өнөөдрийн огноог тооцоолох
+    const today = new Date();
+    const startOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    const endOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      23,
+      59,
+      59,
+      999
+    );
 
-    const shifts = await Shift.find({ branchId })
+    console.log("Date range:", { startOfDay, endOfDay });
+
+    const shifts = await Shift.find({
+      branchId: branchId,
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+    })
       .populate("branchId")
       .populate("roles")
       .populate({
         path: "employees.$*",
-        model: "Employee"
+        model: "Employee",
       });
 
+    console.log("Found today's shifts:", shifts);
     res.status(200).json(shifts);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Салбарын ээлжийн өгөгдөл авах үед алдаа гарлаа" });
+    console.error("Error fetching today's shifts:", error);
+    res
+      .status(500)
+      .json({ message: "Өнөөдрийн ээлжийн өгөгдөл авах үед алдаа гарлаа" });
   }
 });
 
@@ -114,7 +148,7 @@ router.put("/:id", verifyToken, async (req, res) => {
       .populate("roles")
       .populate({
         path: "employees.$*",
-        model: "Employee"
+        model: "Employee",
       });
 
     if (!updatedShift) {
