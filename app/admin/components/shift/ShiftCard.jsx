@@ -27,6 +27,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import axios from "axios";
 import ShiftButton from "../../components/shift/ShiftButton";
 export default function ShiftCard({ shiftType, shifts, onDelete }) {
+  console.log("ShiftCard rendered with shiftType:", shiftType, "shifts:", shifts);
   // const { user } = useAuth();
   // const [shifts, setShifts] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -90,6 +91,21 @@ export default function ShiftCard({ shiftType, shifts, onDelete }) {
     setEditDialogOpen(true);
   };
 
+  const handleEditSuccess = () => {
+    setEditDialogOpen(false);
+    setSelectedEditData(null);
+    if (onDelete) {
+      onDelete();
+    }
+  };
+
+  // Reset edit state when dialog is closed
+  useEffect(() => {
+    if (!editDialogOpen) {
+      setSelectedEditData(null);
+    }
+  }, [editDialogOpen]);
+
   console.log("filtered", filtered);
   return (
     <Card className="w-full max-w-sm">
@@ -124,7 +140,7 @@ export default function ShiftCard({ shiftType, shifts, onDelete }) {
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-4 py-2">Нэр</th>
-                  <th className="px-4 py-2">Салбар</th>
+                  <th className="px-4 py-2">Утас</th>
                   <th className="px-4 py-2">Албан тушаал</th>
                 </tr>
               </thead>
@@ -151,6 +167,13 @@ export default function ShiftCard({ shiftType, shifts, onDelete }) {
                   >
                     Устгах
                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(filtered[0])}
+                  >
+                    Ээлж засах
+                  </Button>
                 </>
               ) : null}
               <DeleteItems
@@ -160,8 +183,10 @@ export default function ShiftCard({ shiftType, shifts, onDelete }) {
               />
               <ShiftButton
                 isEdit={true}
+                open={editDialogOpen}
+                onOpenChange={setEditDialogOpen}
                 editData={selectedEditData}
-                onSuccess={onDelete}
+                onSuccess={handleEditSuccess}
               />
             </div>
           </div>

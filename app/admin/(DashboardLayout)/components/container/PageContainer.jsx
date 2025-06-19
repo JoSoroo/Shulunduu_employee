@@ -7,7 +7,9 @@ const PageContainer = ({ title, description, children }) => {
         <title>{title}</title>
         {description && <meta name="description" content={description} />}
       </Head>
-      {children}
+      
+        {children}
+      
     </>
   );
 };

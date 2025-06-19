@@ -14,7 +14,8 @@ const employeeSchema = new mongoose.Schema(
       required: true,
     },
     position: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
       required: true,
     },
     branchId: {

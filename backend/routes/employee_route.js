@@ -67,7 +67,7 @@ router.get("/", verifyToken, async (req, res) => {
     if (role === "manager") {
       filter = { branchId };
     }
-    const employee = await Employee.find(filter).populate("branchId");
+    const employee = await Employee.find(filter).populate("branchId").populate("position");
     const formatted = employee.map((emp) => ({
       ...emp.toObject(),
       img: emp.img
@@ -129,6 +129,22 @@ router.put("/:id", upload.single("img"), async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Серверийн алдаа" });
+  }
+});
+
+// Get total count of employees
+router.get("/count", verifyToken, async (req, res) => {
+  try {
+    const { role, branchId } = req.user;
+    let filter = {};
+    if (role === "manager") {
+      filter = { branchId };
+    }
+    const count = await Employee.countDocuments(filter);
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Тооллого хийхэд алдаа гарлаа" });
   }
 });
 

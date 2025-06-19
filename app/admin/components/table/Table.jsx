@@ -17,12 +17,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
+
 export default function TableItems({
   caption,
   headers,
   rows,
   onEdit,
   onDelete,
+  tableType = "default"
 }) {
   return (
     <Table>
@@ -32,16 +34,15 @@ export default function TableItems({
           {headers.map((header, index) => (
             <TableHead key={index}>{header}</TableHead>
           ))}
-          <TableHead>Үйлдэл</TableHead> {/* нэмэлт багана */}
+          <TableHead>Үйлдэл</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {rows.map((branch, rowIndex) => (
-          <TableRow key={branch.id || rowIndex}>
-            {branch.row.map((cell, cellIndex) => (
+        {rows.map((item, rowIndex) => (
+          <TableRow key={item.id || rowIndex}>
+            {item.row.map((cell, cellIndex) => (
               <TableCell key={cellIndex}>
-                {/* Хэрвээ cell нь массив байвал (ажилчидын мэдээлэл) */}
-                {Array.isArray(cell) ? (
+                {tableType === "employees" && Array.isArray(cell) ? (
                   <div className="flex flex-col gap-2">
                     {cell.map((emp, idx) => (
                       <div key={idx} className="flex items-center gap-2">
@@ -63,8 +64,16 @@ export default function TableItems({
                       </div>
                     ))}
                   </div>
+                ) : tableType === "shifts" && Array.isArray(cell) && cell.length > 0 && cell[0]?.role ? (
+                  // Handle shift details array
+                  <div className="flex flex-col gap-1">
+                    {cell.map((emp, idx) => (
+                      <div key={idx} className="text-xs">
+                        {emp.name} ({emp.role})
+                      </div>
+                    ))}
+                  </div>
                 ) : (
-                  // Хэрвээ жирийн string эсвэл number бол шууд харуулна
                   cell
                 )}
               </TableCell>

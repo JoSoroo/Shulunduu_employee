@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const Employee = require("./Employee");
 const Branch = require("./Branch");
+const Role = require("./Role");
+
 const shiftSchema = new mongoose.Schema(
   {
     date: {
@@ -15,24 +17,13 @@ const shiftSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Branch",
     },
+    roles: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
+    }],
     employees: {
-      manager: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Employee",
-      },
-      chef: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Employee",
-      },
-      waiter: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Employee",
-      },
-      security: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Employee",
-      },
-      cleaner: {
+      type: Map,
+      of: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Employee",
       },

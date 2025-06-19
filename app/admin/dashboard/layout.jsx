@@ -24,7 +24,7 @@ const routeAccess = {
     "/admin/dashboard/branches",
     "/admin/dashboard/managers",
     "/admin/dashboard/employees",
-    "/admin/dashboard",
+    "/admin/dashboard/role",
   ],
   manager: [
     "/",

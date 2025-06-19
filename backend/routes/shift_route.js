@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Shift = require("../models/Shift");
 const Branch = require("../models/Branch");
+const Role = require("../models/Role");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 
@@ -12,7 +13,7 @@ router.post("/", async (req, res) => {
   try {
     const shift = new Shift(req.body);
     await shift.save();
-    res.status(201).json(shift);
+   res.status(201).json(shift);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Хадгалах үед алдаа гарлаа" });
@@ -48,14 +49,19 @@ router.get("/", verifyToken, async (req, res) => {
     if (role === "manager") {
       filter = { branchId };
     }
+    console.log("Shift filter:", filter);
+    
     const shift = await Shift.find(filter)
       .populate("branchId")
-      .populate("employees.manager")
-      .populate("employees.chef")
-      .populate("employees.waiter")
-      .populate("employees.security")
-      .populate("employees.cleaner");
+      .populate("roles")
+      .populate({
+        path: "employees.$*",
+        model: "Employee"
+      });
 
+    console.log("Found shifts:", shift);
+    console.log("First shift employees:", shift[0]?.employees);
+    console.log("First shift roles:", shift[0]?.roles);
     res.status(200).json(shift);
   } catch (error) {
     console.log(error);
@@ -63,11 +69,36 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
+// ... бусад импорт, код ...
+
+// Зөвхөн тухайн салбарын ээлжүүдийг авах
+router.get("/branch/:branchId", async (req, res) => {
+  try {
+    const { branchId } = req.params;
+    if (!branchId) {
+      return res.status(400).json({ message: "Салбарын ID шаардлагатай" });
+    }
+
+    const shifts = await Shift.find({ branchId })
+      .populate("branchId")
+      .populate("roles")
+      .populate({
+        path: "employees.$*",
+        model: "Employee"
+      });
+
+    res.status(200).json(shifts);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Салбарын ээлжийн өгөгдөл авах үед алдаа гарлаа" });
+  }
+});
+
 // Update shift
 router.put("/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { date, shiftType, employees } = req.body;
+    const { date, shiftType, employees, roles } = req.body;
 
     const updatedShift = await Shift.findByIdAndUpdate(
       id,
@@ -75,15 +106,16 @@ router.put("/:id", verifyToken, async (req, res) => {
         date,
         shiftType,
         employees,
+        roles,
       },
       { new: true }
     )
       .populate("branchId")
-      .populate("employees.manager")
-      .populate("employees.chef")
-      .populate("employees.waiter")
-      .populate("employees.security")
-      .populate("employees.cleaner");
+      .populate("roles")
+      .populate({
+        path: "employees.$*",
+        model: "Employee"
+      });
 
     if (!updatedShift) {
       return res.status(404).json({ message: "Ээлж олдсонгүй" });
@@ -105,7 +137,7 @@ router.delete("/:id", async (req, res) => {
     res
       .status(200)
       .json({ message: "Ээлжийг амжилттай устгалаа", deletedShift });
-  } catch {
+  } catch (error) {
     console.error("Устгах үед алдаа гарлаа:", error);
     res.status(500).json({ message: "Серверийн алдаа" });
   }

@@ -15,7 +15,8 @@ export default function ShiftRoleSelector({
   selected,
   onChange,
 }) {
-  const filteredEmployees = employees.filter((emp) => emp.row[2] === role);
+  const filteredEmployees = employees.filter((emp) => emp.role === role);
+  console.log(`Filtering employees for role "${role}":`, filteredEmployees);
   return (
     <div className="grid gap-3">
       <Label>{role}</Label>
@@ -29,7 +30,7 @@ export default function ShiftRoleSelector({
             {filteredEmployees.length > 0 ? (
               filteredEmployees.map((emp) => (
                 <SelectItem key={emp.id} value={emp.id}>
-                  {emp.row[1] /* emp.name биш, row[1] = нэр */}
+                  {emp.name}
                 </SelectItem>
               ))
             ) : (

@@ -20,6 +20,7 @@ const employeeHeaders = [
 
 export default function EmployeePage() {
   const [employeeRows, setEmployeeRows] = useState([]);
+  const [rawEmployeeData, setRawEmployeeData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -27,6 +28,7 @@ export default function EmployeePage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedDeleteIndex, setSelectedDeleteIndex] = useState(null);
   const [branches, setBranches] = useState([]);
+  const [roles, setRoles] = useState([]);
   const { user } = useAuth();
   console.log(user);
   const fetchEmployees = () => {
@@ -63,7 +65,7 @@ export default function EmployeePage() {
                 "No Image"
               ),
               employee.name,
-              employee.position,
+              employee.position?.name || "Тодорхойгүй",
               employee.branchId?.number || "Тодорхойгүй",
               employee.branchId?.location || "Тодорхойгүй",
               employee.phone,
@@ -73,6 +75,7 @@ export default function EmployeePage() {
 
         console.log("Ирсэн өгөгдөл: ", formattedData);
         setEmployeeRows(formattedData);
+        setRawEmployeeData(res.data);
       })
       .catch(() => {
         console.log("Өгөгдөл авахад алдаа гарлаа");
@@ -93,10 +96,27 @@ export default function EmployeePage() {
         console.log("Өгөгдөл авахад алдаа гарлаа");
       });
   };
+
+  const fetchRoles = () => {
+    axios
+      .get("http://localhost:5000/api/roles")
+      .then((res) => {
+        const roleOptions = res.data.map((role) => ({
+          label: role.name,
+          value: role._id.toString(),
+        }));
+        setRoles(roleOptions);
+      })
+      .catch(() => {
+        console.log("Role өгөгдөл авахад алдаа гарлаа");
+      });
+  };
+
   useEffect(() => {
     if (user && user.token) {
       fetchEmployees();
       fetchBranches();
+      fetchRoles();
     }
   }, [user]);
   const filteredRows = employeeRows.filter((emp) => {
@@ -113,9 +133,9 @@ export default function EmployeePage() {
 
   console.log("employeeRows", employeeRows);
   const confirmDelete = () => {
-    const employee = employeeRows[selectedDeleteIndex];
+    const employee = rawEmployeeData[selectedDeleteIndex];
     axios
-      .delete(`http://localhost:5000/api/employees/${employee.id}`)
+      .delete(`http://localhost:5000/api/employees/${employee._id}`)
       .then((res) => {
         toast.success(res.data.message);
         fetchEmployees();
@@ -131,16 +151,16 @@ export default function EmployeePage() {
     setDeleteDialogOpen(true);
   };
   const handleEdit = (index) => {
-    const employee = employeeRows[index];
+    const employee = rawEmployeeData[index];
     console.log("setEditMode ajillaa");
+    console.log("Employee data for edit:", employee);
     setEditMode(true);
     setEditData({
-      id: employee.id,
-      img: employee.row[0],
-      name: employee.row[1],
-      position: employee.row[2],
-      branchId: employee.row[3],
-      phone: employee.row[4],
+      id: employee._id,
+      name: employee.name,
+      position: employee.position?._id || employee.position,
+      branchId: employee.branchId?._id || employee.branchId,
+      phone: employee.phone,
     });
     setFormOpen(true); // формыг нээх
   };
@@ -181,7 +201,7 @@ export default function EmployeePage() {
             fields={[
               { label: "Ажилчины зураг", key: "img", type: "file" },
               { label: "Ажилчины нэр", key: "name" },
-              { label: "Албан тушаал", key: "position" },
+              { label: "Албан тушаал", key: "position", type: "select", options: roles  },
               {
                 label: "Салбар",
                 key: "branchId",
@@ -255,6 +275,7 @@ export default function EmployeePage() {
           rows={filteredRows}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          tableType="employees"
         />
         <DeleteItems
           open={deleteDialogOpen}

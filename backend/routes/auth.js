@@ -7,9 +7,11 @@ const Manager = require("../models/Manager");
 const adminUsername = process.env.ADMIN_USERNAME;
 const adminPassword = process.env.ADMIN_PASSWORD;
 const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+  console.error("JWT_SECRET орчны хувьсагч тогтоогдоогүй байна!");
+}
 
 //Admin Login
-
 router.post("/admin/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -118,16 +120,18 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ message: "Устгахад алдаа гарлаа" });
   }
 });
-//Manager login
-// router.post("/manager/login", async (req, res) => {
-//   const { username, password } = req.body;
-//   const manager = await Manager.findOne({ username });
-//   if (!manager) return res.statu(401).json({ message: "invaild credentials" });
-//   const isMatch = await bcrypt.compare(password, manager.password);
-//   if (!isMatch) return res.status(401).json({ message: "Invaild credentials" });
+// const verifyToken = (req, res, next) => {
+//   const token = req.headers["authorization"];
+//   if (!token) {
+//     return res.status(401).json({ message: "Токен байхгүй" });
+//   }
 
-//   const token = jwt.sign({ role: "manager", username }, jwtSecret);
-//   res.json({ token });
-// });
-
+//   jwt.verify(token, jwtSecret, (err, decoded) => {
+//     if (err) {
+//       return res.status(403).json({ message: "Токен буруу байна" });
+//     }
+//     req.user = decoded;
+//     next();
+//   });
+// };
 module.exports = router;

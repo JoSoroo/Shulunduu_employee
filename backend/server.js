@@ -24,4 +24,6 @@ const employeeRoutes = require("./routes/employee_route");
 app.use("/api/employees", employeeRoutes);
 const shiftRoutes = require("./routes/shift_route");
 app.use("/api/shifts", shiftRoutes);
+const roleRoutes = require("./routes/role");
+app.use("/api/roles", roleRoutes);
 app.listen(5000, () => console.log("Server started on port 5000"));

@@ -5,6 +5,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import VaccinesIcon from "@mui/icons-material/Vaccines";
 import React from "react";
 import Link from "next/link";
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from "../../context/authContext";
 import RoofingIcon from '@mui/icons-material/Roofing';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
@@ -32,13 +33,20 @@ const NavMenu = () => {
       title: "Хянах самбар",
       icon: DashboardIcon,
       href: "/admin/dashboard",
-      roles: ["admin", "manager"],
+      roles: ["manager"],
     },
     {
       id: uniqueId(),
       title: "Салбар",
       icon: RoofingIcon,
       href: "/admin/dashboard/branches",
+      roles: ["admin"],
+    },
+    {
+      id:uniqueId(),
+      title: "Албан тушаал",
+      icon: Settings,
+      href: "/admin/dashboard/role",
       roles: ["admin"],
     },
     {
@@ -66,6 +74,11 @@ const NavMenu = () => {
 
   const filteredItems = allMenuItems.filter((item) => item.roles.includes(userRole));
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/");
+  };
+
   return (
      <Sidebar>
       <SidebarContent>
@@ -83,6 +96,12 @@ const NavMenu = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuButton asChild onClick={handleLogout}>
+                <a href="/admin">
+                  <LogoutIcon />
+                  <span>Гарах</span>
+                </a>
+              </SidebarMenuButton>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
