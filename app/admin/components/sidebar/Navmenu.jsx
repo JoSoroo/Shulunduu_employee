@@ -3,7 +3,7 @@ import { uniqueId } from "lodash";
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import VaccinesIcon from "@mui/icons-material/Vaccines";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useAuth } from "../../context/authContext";
@@ -20,8 +20,18 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+
 const NavMenu = () => {
   const { user } = useAuth();
+  const [isMounted, setIsMounted] = useState(false);
+  const [pathname, setPathname] = useState('');
+
+  useEffect(() => {
+    setIsMounted(true);
+    setPathname(window.location.pathname);
+  }, []);
+
+  if (!isMounted) return null;
 
   if (!user) return null;
 
@@ -99,7 +109,7 @@ const NavMenu = () => {
               {filteredItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.href}>
+                    <a href={item.href} className={`${pathname === item.href ? 'active border-black border' : ''}`}>
                       <item.icon />
                       <span>{item.title}</span>
                     </a>

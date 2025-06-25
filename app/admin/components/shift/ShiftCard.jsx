@@ -26,23 +26,20 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import axios from "axios";
 import ShiftButton from "../../components/shift/ShiftButton";
+
 export default function ShiftCard({ shiftType, shifts, onDelete }) {
-  console.log("ShiftCard rendered with shiftType:", shiftType, "shifts:", shifts);
-  // const { user } = useAuth();
-  // const [shifts, setShifts] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedDeleteIndex, setSelectedDeleteIndex] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedEditData, setSelectedEditData] = useState(null);
+  const [positions, setPositions] = useState([]);
 
   const handleToggle = () => {
     setShowDetails((prev) => !prev);
   };
 
   const today = new Date().toLocaleDateString("sv-SE");
-  console.log("Shifts", shifts);
-  console.log("today:", today);
   const filtered = shifts?.filter(
     (s) =>
       new Date(s.date).toLocaleDateString("sv-SE") === today &&
@@ -75,9 +72,6 @@ export default function ShiftCard({ shiftType, shifts, onDelete }) {
   };
 
   const handleDelete = (shiftId) => {
-    console.log("Attempting to delete shift with ID:", shiftId);
-    console.log("Current filtered data:", filtered);
-
     if (!shiftId) {
       toast.error("Устгах ID олдсонгүй.");
       return;
@@ -106,7 +100,9 @@ export default function ShiftCard({ shiftType, shifts, onDelete }) {
     }
   }, [editDialogOpen]);
 
+  useEffect(() => {}, []);
   console.log("filtered", filtered);
+  console.log("details", filtered[0]?.details[0].role);
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
@@ -119,8 +115,10 @@ export default function ShiftCard({ shiftType, shifts, onDelete }) {
           {filtered.length > 0 ? (
             filtered[0].details.map((emp, index) => (
               <Avatar key={index}>
-                <AvatarImage src={emp.image || ""} alt={emp.name} />
-                <AvatarFallback>{emp.name.slice(0, 2)}</AvatarFallback>
+                <AvatarImage src={emp.image || ""} alt={emp.name || ""} />
+                <AvatarFallback>
+                  {emp?.name ? emp.name.slice(0, 2) : "NA"}
+                </AvatarFallback>
               </Avatar>
             ))
           ) : (
@@ -149,7 +147,9 @@ export default function ShiftCard({ shiftType, shifts, onDelete }) {
                   <tr key={index} className="border-t">
                     <td className="px-4 py-2">{emp.name}</td>
                     <td className="px-4 py-2">{emp.phone}</td>
-                    <td className="px-4 py-2">{emp.position}</td>
+                    <td className="px-4 py-2">
+                      {emp.role || "Албан тушаал тодорхойгүй"}
+                    </td>
                   </tr>
                 ))}
               </tbody>

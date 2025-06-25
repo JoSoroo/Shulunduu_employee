@@ -18,6 +18,7 @@ export default function ReclamPage() {
       try {
         const response = await axios.get("http://localhost:5000/api/reclams");
         setAdvertisements(response.data);
+        console.log("Fetched advertisements:", response.data);
       } catch (error) {
         console.error("Error fetching advertisements:", error);
       } finally {
@@ -34,6 +35,9 @@ export default function ReclamPage() {
       formDataToSend.append("title", formData.title);
       if (formData.image) {
         formDataToSend.append("image", formData.image);
+      }
+      if (formData.video) {
+        formDataToSend.append("video", formData.video);
       }
 
       const response = await axios.post(
@@ -126,6 +130,13 @@ export default function ReclamPage() {
       key: "image",
       label: "Зураг",
       type: "file",
+      accept: "image/*",
+    },
+    {
+      key: "video",
+      label: "Бичлэг",
+      type: "file",
+      accept: "video/*",
     },
   ];
 
@@ -172,13 +183,27 @@ export default function ReclamPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {advertisements.map((ad) => (
               <div key={ad._id} className="border rounded-lg p-4">
-                {ad.image && (
+                {ad.image && ad.image.data && (
                   <div className="mb-3">
                     <img
                       src={`data:${ad.image.contentType};base64,${ad.image.data}`}
                       alt={ad.title}
                       className="w-full h-32 object-cover rounded-lg"
                     />
+                  </div>
+                )}
+                {ad.video && ad.video.data && (
+                  <div className="mb-3">
+                    <video
+                      controls
+                      className="w-full h-32 object-cover rounded-lg"
+                    >
+                      <source
+                        src={`data:${ad.video.contentType};base64,${ad.video.data}`}
+                        type={ad.video.contentType}
+                      />
+                      Your browser does not support the video tag.
+                    </video>
                   </div>
                 )}
                 <h3 className="font-semibold mb-2">{ad.title}</h3>

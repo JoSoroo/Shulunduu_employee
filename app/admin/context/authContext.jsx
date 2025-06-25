@@ -6,6 +6,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // { role: "admin" } гэх мэт
+  
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -49,8 +50,8 @@ export const AuthProvider = ({ children }) => {
         token: data.token,
         branchId: data.branchId,
       }); // ← хэрэглэгчийн мэдээлэл хадгална
-
-      return { success: true };
+      console.log("user:", decoded.role);
+      return { success: true, user: decoded.role };
     } catch (err) {
       return { success: false, error: err.message };
     }

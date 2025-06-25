@@ -10,61 +10,48 @@ export default function BranchPage() {
   const [shifts, setShifts] = useState([]);
   const [reclams, setReclams] = useState([]);
   const [currentShift, setCurrentShift] = useState(null);
-  const [currentView, setCurrentView] = useState("reclam"); // reclam or shift
+  const [currentView, setCurrentView] = useState("reclam"); // "reclam" or "shift"
   const [currentReclamIndex, setCurrentReclamIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  console.log("shifts", shifts);
-  console.log("id", id);
-
   const fetchReclams = () => {
-    console.log("fetchReclams called");
-
     axios
-      .get(`http://localhost:5000/api/reclams`)
+      .get("http://localhost:5000/api/reclams")
       .then((res) => {
-        console.log("Raw reclam data from API:", res.data);
-        const formattedReclams = res.data.map((reclam) => ({
+        const formatted = res.data.map((reclam) => ({
           id: reclam._id,
           title: reclam.title,
-          image: reclam.image 
+          image: reclam.image
             ? `data:${reclam.image.contentType};base64,${reclam.image.data}`
             : null,
-          duration: 3000, // 3 seconds per reclam
+          video: reclam.video
+            ? `data:${reclam.video.contentType};base64,${reclam.video.data}`
+            : null,
+          duration: 3000,
         }));
-        
-        console.log("Formatted reclam data:", formattedReclams);
-        setReclams(formattedReclams);
+        setReclams(formatted);
       })
-      .catch((err) => {
-        console.log("Reclam авахад алдаа:", err);
-      });
+      .catch((err) => console.error("Reclam авахад алдаа:", err));
   };
 
   useEffect(() => {
-    console.log("id", id);
     if (!id) return;
 
-    // Fetch both shifts and reclams data
     fetchReclams();
 
-    // Fetch shifts data
     axios
       .get(`http://localhost:5000/api/shifts/today/${id}`)
       .then((res) => {
         setShifts(res.data);
-        // Filter current shift based on time
         const now = new Date();
         const currentHour = now.getHours();
-        const currentDate = now.toISOString().split("T")[0]; // YYYY-MM-DD format
+        const currentDate = now.toISOString().split("T")[0];
 
-        // Find today's shift
         const todaysShifts = res.data.filter(
           (shift) => shift.date?.slice(0, 10) === currentDate
         );
 
         if (todaysShifts.length > 0) {
-          // If before 12:00, show morning shift, else show evening shift
           const targetShift =
             currentHour < 12
               ? todaysShifts.find(
@@ -78,44 +65,37 @@ export default function BranchPage() {
                     shift.shiftType === "Evening"
                 );
 
-          setCurrentShift(targetShift || todaysShifts[0]); // Fallback to first shift if specific type not found
+          setCurrentShift(targetShift || todaysShifts[0]);
         }
       })
       .catch(() => setShifts([]))
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Timer for cycling through reclams
+  // Нэг удаа reclam -> shift -> reclam гэж ээлжлэн сольж үзүүлэх
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (reclams.length > 0) {
-        setCurrentReclamIndex((prev) => (prev + 1) % reclams.length);
-      }
-    }, 3000); // 3 seconds for each reclam
+    if (reclams.length === 0) return;
 
-    return () => clearInterval(timer);
+    let index = 0;
+    const showReclam = () => {
+      setCurrentView("reclam");
+      setCurrentReclamIndex(index);
+      setTimeout(() => {
+        setCurrentView("shift");
+        index = (index + 1) % reclams.length;
+        setTimeout(showReclam, 6000); // дараагийн loop эхэлнэ
+      }, 3000);
+    };
+
+    showReclam();
+
+    return () => {};
   }, [reclams]);
-
-  // Timer for switching between reclam and shift views
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentView((prev) => {
-        if (prev === "reclam" && reclams.length > 0) {
-          return "shift";
-        } else if (prev === "shift") {
-          return "reclam";
-        }
-        return "shift";
-      });
-    }, currentView === "shift" ? 5000 : 3000); // 5 seconds for shift, 3 seconds for reclam
-
-    return () => clearInterval(timer);
-  }, [currentView, reclams.length]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div>Ээлжийн мэдээлэл уншиж байна...</div>
+      <div className="flex items-center justify-center min-h-screen bg-[rgb(255,125,20)]">
+        <div className="text-white">Ээлжийн мэдээлэл уншиж байна...</div>
       </div>
     );
   }
@@ -123,6 +103,19 @@ export default function BranchPage() {
   const renderContent = () => {
     if (currentView === "reclam" && reclams.length > 0) {
       const currentReclam = reclams[currentReclamIndex];
+      if (currentReclam.video) {
+        return (
+          <div className="fixed inset-0 w-full h-full">
+            <video
+              src={currentReclam.video}
+              controls
+              autoPlay
+              loop
+              className="object-cover w-full h-full"
+            />
+          </div>
+        );
+      }
       return (
         <div className="fixed inset-0 w-full h-full">
           <Image
@@ -138,38 +131,46 @@ export default function BranchPage() {
       );
     }
 
-    // Shift view
+    // renderContent доторх shift view хэсэг
     if (!currentShift) {
       return (
-        <div className="flex flex-col items-center min-h-screen bg-cover bg-center py-8">
-          <h1 className="text-2xl font-bold mb-4">Ээлжийн мэдээлэл</h1>
-          <div className="text-lg">Өнөөдрийн ээлжийн мэдээлэл байхгүй байна</div>
+        <div className="flex flex-col items-center min-h-screen bg-[rgb(90,90,100)] py-8">
+          <h1
+            className="text-2xl font-bold mb-4 text-center"
+            style={{ color: "rgb(90, 90, 100)" }}
+          >
+            ӨНӨӨДӨР ТАНД МАНАЙ ХАМТ ОЛОН ҮЙЛЧИЛЖ БАЙНА
+          </h1>
+          <div className="text-lg text-white">
+            Өнөөдрийн ээлжийн мэдээлэл байхгүй байна
+          </div>
         </div>
       );
     }
 
     return (
-      <div className="flex flex-col items-center min-h-screen bg-cover bg-center py-8">
-        <h1 className="text-2xl font-bold mb-4">Ээлжийн мэдээлэл</h1>
-        <div className="w-full max-w-6xl mb-2">
-          <div className="bg-primary text-white rounded-t-lg px-6 py-3 text-lg font-bold">
-            {currentShift.date?.slice(0, 10) || "Огноо байхгүй"} —{" "}
-            {currentShift.shiftType || ""}
-          </div>
-          <div className="bg-white rounded-b-lg shadow">
-            <ShiftEmployeeList
-              employees={currentShift.employees || {}}
-              roles={currentShift.roles || []}
-            />
-          </div>
+      <div className="min-h-screen bg-[url('/branch.jpg')] bg-cover bg-center py-8 px-4">
+        <h1
+          className="text-2xl font-bold mb-4 text-center"
+          style={{ color: "rgb(90, 90, 100)" }}
+        >
+          ӨНӨӨДӨР ТАНД МАНАЙ ХАМТ ОЛОН ҮЙЛЧИЛЖ БАЙНА
+        </h1>
+        <div>
+          <ShiftEmployeeList
+            employees={currentShift.employees || {}}
+            roles={currentShift.roles || []}
+          />
         </div>
+        <h1
+          className="text-2xl font-bold mb-4 text-center"
+          style={{ color: "rgb(90, 90, 100)" }}
+        >
+          ТА САЙХАН ХООЛЛООРОЙ
+        </h1>
       </div>
     );
   };
-
-  return (
-    <div className="min-h-screen">
-      {renderContent()}
-    </div>
-  );
+  // Return хэсэг
+  return <div className="min-h-screen">{renderContent()}</div>;
 }
