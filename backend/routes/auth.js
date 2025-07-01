@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const router = express.Router();
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const Manager = require("../models/Manager");
 
 const adminUsername = process.env.ADMIN_USERNAME;

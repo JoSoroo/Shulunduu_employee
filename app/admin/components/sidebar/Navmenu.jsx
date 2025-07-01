@@ -9,7 +9,10 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { useAuth } from "../../context/authContext";
 import RoofingIcon from "@mui/icons-material/Roofing";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import OndemandVideoIcon from "@mui/icons-material/OndemandVideo";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import BadgeIcon from "@mui/icons-material/Badge";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import {
   Sidebar,
   SidebarContent,
@@ -24,7 +27,7 @@ import {
 const NavMenu = () => {
   const { user } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
-  const [pathname, setPathname] = useState('');
+  const [pathname, setPathname] = useState("");
 
   useEffect(() => {
     setIsMounted(true);
@@ -55,7 +58,7 @@ const NavMenu = () => {
     {
       id: uniqueId(),
       title: "Албан тушаал",
-      icon: Settings,
+      icon: AdminPanelSettingsIcon,
       href: "/admin/dashboard/role",
       roles: ["admin"],
     },
@@ -76,14 +79,14 @@ const NavMenu = () => {
     {
       id: uniqueId(),
       title: "Ээлж",
-      icon: VaccinesIcon,
+      icon: AccessTimeIcon,
       href: "/admin/dashboard/shift",
       roles: ["manager"],
     },
     {
       id: uniqueId(),
       title: "Реклам",
-      icon: BadgeIcon,
+      icon: OndemandVideoIcon,
       href: "/admin/dashboard/reclam",
       roles: ["admin"],
     },
@@ -109,7 +112,14 @@ const NavMenu = () => {
               {filteredItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.href} className={`${pathname === item.href ? 'active border-black border' : ''}`}>
+                    <a
+                      href={item.href}
+                      className={`${
+                        pathname === item.href
+                          ? "active border-black border"
+                          : ""
+                      }`}
+                    >
                       <item.icon />
                       <span>{item.title}</span>
                     </a>
