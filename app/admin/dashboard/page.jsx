@@ -34,6 +34,9 @@ export default function Home() {
           image: reclam.image
             ? `data:${reclam.image.contentType};base64,${reclam.image.data}`
             : null,
+          video: reclam.video
+            ? `data:${reclam.video.contentType};base64,${reclam.video.data}`
+            : null,
           duration: 3000, // 3 seconds per reclam
         }));
 
@@ -58,7 +61,7 @@ export default function Home() {
       .then((res) => {
         console.log("Raw shifts data:", res.data);
         setShifts(res.data);
-        
+
         // Filter current shift based on time
         const now = new Date();
         const currentHour = now.getHours();
@@ -117,16 +120,19 @@ export default function Home() {
 
   // Timer for switching between reclam and shift views
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentView((prev) => {
-        if (prev === "reclam" && reclams.length > 0) {
+    const timer = setInterval(
+      () => {
+        setCurrentView((prev) => {
+          if (prev === "reclam" && reclams.length > 0) {
+            return "shift";
+          } else if (prev === "shift") {
+            return "reclam";
+          }
           return "shift";
-        } else if (prev === "shift") {
-          return "reclam";
-        }
-        return "shift";
-      });
-    }, currentView === "shift" ? 5000 : 3000); // 5 seconds for shift, 3 seconds for reclam
+        });
+      },
+      currentView === "shift" ? 5000 : 3000
+    ); // 5 seconds for shift, 3 seconds for reclam
 
     return () => clearInterval(timer);
   }, [currentView, reclams.length]);
@@ -134,6 +140,19 @@ export default function Home() {
   const renderContent = () => {
     if (currentView === "reclam" && reclams.length > 0) {
       const currentReclam = reclams[currentReclamIndex];
+      if (currentReclam.video) {
+        return (
+          <div className="fixed inset-0 w-full h-full">
+            <video
+              src={currentReclam.video}
+              controls
+              autoPlay
+              loop
+              className="object-cover w-full h-full"
+            />
+          </div>
+        );
+      }
       return (
         <div className="fixed inset-0 w-full h-full">
           <Image
@@ -154,7 +173,9 @@ export default function Home() {
       return (
         <div className="flex flex-col items-center min-h-screen bg-cover bg-center py-8">
           <h1 className="text-2xl font-bold mb-4">Ээлжийн мэдээлэл</h1>
-          <div className="text-lg">Өнөөдрийн ээлжийн мэдээлэл байхгүй байна</div>
+          <div className="text-lg">
+            Өнөөдрийн ээлжийн мэдээлэл байхгүй байна
+          </div>
         </div>
       );
     }
@@ -178,9 +199,5 @@ export default function Home() {
     );
   };
 
-  return (
-    <div className="min-h-screen">
-      {renderContent()}
-    </div>
-  );
+  return <div className="min-h-screen">{renderContent()}</div>;
 }
